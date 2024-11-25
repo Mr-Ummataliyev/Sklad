@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Sklad.Application.Abstraction;
 using Sklad.Application.UseCases.Queries;
 using Sklad.Domain.Entities.Models;
@@ -21,8 +22,19 @@ namespace Sklad.Application.UseCases.Handlers
 
         public async Task<IEnumerable<Basket>> Handle(GetAllBasketQuery request, CancellationToken cancellationToken)
         {
-            var res =  _context.Baskets.ToList();
-            return res;
+            if (request.PageIndex == 0 || request.Size == 0)
+            {
+                return Enumerable.Empty<Basket>();
+            }
+
+            var baskets = await _context.Baskets
+          .Include(b => b.BuyedProducts)  
+          .OrderBy(b => b.Bought)         
+          .Skip((request.PageIndex - 1) * request.Size)  
+          .Take(request.Size)                  
+          .ToListAsync();
+           return baskets;
+     
         }
     }
 }

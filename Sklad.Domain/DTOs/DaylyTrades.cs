@@ -11,6 +11,6 @@ namespace Sklad.Domain.DTOs
     {
         public int TotalTrade {  get; set; }
         public int TotalProductCost {  get; set; }
-        public List<Basket> Basket { get; set; }
+        public List<Basket> Baskets { get; set; }
     }
 }

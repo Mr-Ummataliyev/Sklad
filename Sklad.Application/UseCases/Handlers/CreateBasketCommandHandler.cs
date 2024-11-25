@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Sklad.Application.Abstraction;
 using Sklad.Application.UseCases.Commands;
+using Sklad.Domain.DTOs;
 using Sklad.Domain.Entities.Models;
 using System;
 using System.Collections.Generic;
@@ -18,46 +20,54 @@ namespace Sklad.Application.UseCases.Handlers
         {
             _context = context;
         }
-
         public async Task<Response> Handle(CreateBasketCommand request, CancellationToken cancellationToken)
         {
-            if (request == null)
+            var newBask = new Basket
             {
-                return new Response { IsSuccess = false, Message = "Basket is null", Status = 400 };
 
-            }
-            else { 
-              var product = _context.Products.FirstOrDefault(x=>x.Id==request.ProductId);
-                if (product == null) {
-                    return new Response { IsSuccess = false, Message = "Such product not found", Status = 404 };
+                Paid = request.Paid,
+                TotalPrice = request.TotalPrice,
+                BuyedProducts = request.BuyProducts.Select(c => new Small {ProductId = c.ProductId, ProductName = c.ProductName, ProductDescription = c.ProductDescription, Amount = c.Amount}).ToList()
+
+            };
+            foreach (var i in newBask.BuyedProducts) {
+                var a = await _context.Products.FirstOrDefaultAsync(c=> c.Id == i.ProductId);
+                if (a == null) {
+                    return new Response()
+                    {
+                        IsSuccess = false,
+                        Message = $"PRODUCT WITH ID {i.ProductId} NOT FOUND",
+                        Status = 404
+
+                    };
 
                 }
-                else if (product.Amount<request.Amount)
+                else if (a.Amount < i.Amount)
                 {
-                    return new Response { IsSuccess = false, Message = $"We have only {product.Amount} {product.AmountCat} of {product.Name}", Status = 201 };
-                }
+                    return new Response()
+                    {
+                        IsSuccess = false,
+                        Message = $"Sorry we have only {a.Amount} {a.AmountCat} of {a.Name}",
+                        Status = 201
 
+                    };
+                }
                 else
                 {
-                    product.Amount -= request.Amount;
-                    var newBasket = new Basket
-                    {
-                        ProductId = request.ProductId,
-                        Amount = request.Amount,
-                        Paid = request.Paid,
-                        TotalPrice = request.TotalPrice,
-                        Bought = DateTime.UtcNow,
-                    };
-                    await _context.Baskets.AddAsync(newBasket);
-                    await _context.SaveChangesAsync();
-                    return new Response { IsSuccess = true, Message = "Created", Status = 200 };
-
+                    a.Amount -= i.Amount;
                 }
-
-         
-
-
+            
             }
+
+             await _context.Baskets.AddAsync(newBask);
+             await _context.SaveChangesAsync();
+            return new Response()
+            {
+                IsSuccess = true,
+                Message = "Created Successfuly",
+                Status = 200
+
+            };
         }
     }
 }

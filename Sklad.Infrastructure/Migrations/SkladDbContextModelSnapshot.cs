@@ -18,9 +18,44 @@ namespace Sklad.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Sklad.Domain.DTOs.Small", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("BasketId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProductDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasketId");
+
+                    b.ToTable("Smalls");
+                });
 
             modelBuilder.Entity("Sklad.Domain.Entities.Models.Basket", b =>
                 {
@@ -28,16 +63,10 @@ namespace Sklad.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime>("Bought")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Paid")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
                     b.Property<int>("TotalPrice")
@@ -80,6 +109,22 @@ namespace Sklad.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Sklad.Domain.DTOs.Small", b =>
+                {
+                    b.HasOne("Sklad.Domain.Entities.Models.Basket", "Basket")
+                        .WithMany("BuyedProducts")
+                        .HasForeignKey("BasketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Basket");
+                });
+
+            modelBuilder.Entity("Sklad.Domain.Entities.Models.Basket", b =>
+                {
+                    b.Navigation("BuyedProducts");
                 });
 #pragma warning restore 612, 618
         }

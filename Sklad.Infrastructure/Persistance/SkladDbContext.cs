@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sklad.Application.Abstraction;
+using Sklad.Domain.DTOs;
 using Sklad.Domain.Entities.Models;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,6 @@ namespace Sklad.Infrastructure.Persistance
         }
         public DbSet<Product> Products { get; set; }
         public DbSet<Basket> Baskets { get; set; }
+        public DbSet<Small> Smalls{ get; set; }
     }
 }

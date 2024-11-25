@@ -17,7 +17,7 @@ namespace Sklad.Infrastructure
         {
             services.AddDbContext<ISkladDbContext, SkladDbContext>(option =>
             {
-                option.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                option.UseNpgsql(configuration.GetConnectionString("DefaultConnection")).UseLazyLoadingProxies();
             });
             return services;
         }

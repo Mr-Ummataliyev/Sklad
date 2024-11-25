@@ -20,8 +20,8 @@ namespace Sklad.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Basket>> GetAllBasket() { 
-               var res = await _mediator.Send(new GetAllBasketQuery());
+        public async Task<IEnumerable<Basket>> GetAllBasket(int pageIndex, int pageSize) { 
+               var res = await _mediator.Send(new GetAllBasketQuery { PageIndex = pageIndex, Size = pageSize});
                return res;
         
         }
@@ -38,6 +38,12 @@ namespace Sklad.API.Controllers
             var res = await _mediator.Send(command);
             return res;
 
+        }
+        [HttpDelete]
+        public async Task<Response> DeleteBasket(Guid BasketId)
+        {
+            var res = await _mediator.Send(new  DeleteBasketCommand { BasketId = BasketId });
+            return res;
         }
     }
 }
